@@ -1,9 +1,0 @@
-{% extends "user/base.html" %} {% block content %}
-<h2>Verify Email</h2>
-<form method="post">
-  {% csrf_token %}
-  <p>Email: <input type="email" name="email" required /></p>
-  <p>OTP: <input type="number" name="otp" required /></p>
-  <button type="submit">Verify OTP</button>
-</form>
-{% endblock %}

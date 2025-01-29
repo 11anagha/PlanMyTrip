@@ -1,12 +1,17 @@
-{% extends "user/base.html" %} {% block content %}
-<div class="form-container">
+{% extends "user/base.html" %}{% load crispy_forms_tags %}{% load static %}
+<!-- Load crispy_forms_tags -->
+
+{% block content %}
+<div class="auth-container">
   <h2>Register</h2>
-  <form method="post">
-    {% csrf_token %} {{ form.as_p }}
-    <button type="submit">Register</button>
+  <form method="post" class="auth-form">
+    {% csrf_token %} {{ form|crispy}}
+    <!-- Render the form using crispy -->
+    <button class="auth-button" type="submit">Register</button>
   </form>
-  <p class="login-link">
-    Already have an account? <a href="{% url 'login' %}">Login here</a>.
+  <p class="auth-text">
+    Already have an account?
+    <a class="auth-link" href="{% url 'login' %}">Login here</a>.
   </p>
 </div>
 {% endblock %}

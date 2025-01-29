@@ -1,1 +1,12 @@
-{% extends "itinerary/base.html" %} {% block content %}<h2>Response</h2><br> <p>{{response}}</p>{% endblock %} </h>
+{% extends "itinerary/base.html" %} {% block content %}
+<h2>Generated Itinerary</h2>
+
+<p><strong>From:</strong> {{ departure }}</p>
+<p><strong>To:</strong> {{ destination }}</p>
+<p><strong>Duration:</strong> {{ duration }} day(s)</p>
+<br />
+<h3>Itinerary Details:</h3>
+<p>{{ response }}</p>
+
+<a href="{% url 'dashboard' %}">Go Back</a>
+{% endblock %}

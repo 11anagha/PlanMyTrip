@@ -1,12 +1,32 @@
 {% extends "itinerary/base.html" %} {% block content %}
-<h2>Generated Itinerary</h2>
+<div class="container mt-5">
+  <h2>Generated Itinerary</h2>
 
-<p><strong>From:</strong> {{ departure }}</p>
-<p><strong>To:</strong> {{ destination }}</p>
-<p><strong>Duration:</strong> {{ duration }} day(s)</p>
-<br />
-<h3>Itinerary Details:</h3>
-<p>{{ response }}</p>
-
-<a href="{% url 'dashboard' %}">Go Back</a>
+  <p><strong>From:</strong> {{ current_location }}</p>
+  <p><strong>To:</strong> {{ destination }}</p>
+  <p><strong>Duration:</strong> {{ duration }} day(s)</p>
+  <br />
+  <h3>Itinerary Details:</h3>
+  <div class="mt-4">
+    {% if response %} {% for day, activities in response.items %}
+    <div class="card mb-3">
+      <div class="card-header bg-primary text-white">
+        <h5>Day {{ day }}</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group">
+          {% for activity in activities %}
+          <li class="list-group-item">✅ {{ activity }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <p class="text-center text-danger">
+      No itinerary available. Please try again.
+    </p>
+    {% endif %}
+  </div>
+  <a href="{% url 'dashboard' %}">Go Back</a>
+</div>
 {% endblock %}

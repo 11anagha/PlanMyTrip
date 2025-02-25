@@ -1,32 +1,95 @@
-{% extends "itinerary/base.html" %} {% block content %}
+{% extends 'itinerary/base.html' %} {% block content %}
 <div class="container mt-5">
-  <h2>Generated Itinerary</h2>
-
-  <p><strong>From:</strong> {{ current_location }}</p>
-  <p><strong>To:</strong> {{ destination }}</p>
-  <p><strong>Duration:</strong> {{ duration }} day(s)</p>
-  <br />
-  <h3>Itinerary Details:</h3>
-  <div class="mt-4">
-    {% if response %} {% for day, activities in response.items %}
-    <div class="card mb-3">
-      <div class="card-header bg-primary text-white">
-        <h5>Day {{ day }}</h5>
-      </div>
-      <div class="card-body">
-        <ul class="list-group">
-          {% for activity in activities %}
-          <li class="list-group-item">✅ {{ activity }}</li>
-          {% endfor %}
-        </ul>
+  <h2 class="text-center fw-bold text-primary">
+    📍 Your Personalized Itinerary
+  </h2>
+  <p class="text-center text-muted">
+    Explore your planned trip with day-wise details
+  </p>
+  <!-- ✅ Always Show Trip Details -->
+  <div class="row justify-content-center mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="fw-bold">🌍 Trip Details</h5>
+        </div>
+        <div class="card-body">
+          {% if trip_details %}
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <strong>🗺 Destination:</strong> {{ trip_details.destination }}
+            </li>
+            <li class="list-group-item">
+              <strong>📍 From:</strong> {{ trip_details.current_location }}
+            </li>
+            <li class="list-group-item">
+              <strong>📅 Travel Dates:</strong> {{ trip_details.start_date }} to
+              {{ trip_details.end_date }}
+            </li>
+            <li class="list-group-item">
+              <strong>👥 Travelers:</strong> {{ trip_details.num_travelers }}
+            </li>
+            <li class="list-group-item">
+              <strong>🚗 Transport Mode:</strong> {{ transport_mode }}
+            </li>
+          </ul>
+          {% else %}
+          <p class="text-muted">No trip details available.</p>
+          {% endif %}
+        </div>
       </div>
     </div>
-    {% endfor %} {% else %}
-    <p class="text-center text-danger">
-      No itinerary available. Please try again.
-    </p>
-    {% endif %}
   </div>
-  <a href="{% url 'dashboard' %}">Go Back</a>
+
+  {% if response.itinerary %}
+  <div class="row justify-content-center">
+    {% for day, details in response.itinerary.items %}
+    <div class="col-lg-4 col-md-6 mb-4">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="fw-bold">📅 {{ day }}</h5>
+          {% if details.date %}
+          <p class="mb-0"><small>📆 {{ details.date }}</small></p>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            {% if details.activities %} {% for activity in details.activities %}
+            <li class="list-group-item d-flex align-items-start">
+              <span class="text-success me-2">✔️</span>
+              <div>
+                <strong>🕒 {{ activity.time }}</strong><br />
+                {{ activity.activity }}
+              </div>
+            </li>
+            {% endfor %} {% else %}
+            <li class="list-group-item text-muted text-center">
+              🚫 No activities planned for this day.
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center mt-4">
+    <p class="text-danger fs-5 fw-bold">
+      ⚠️ No itinerary available. Please try again.
+    </p>
+    <img
+      src="https://cdn-icons-png.flaticon.com/512/2748/2748558.png"
+      width="150"
+      alt="No itinerary"
+    />
+  </div>
+  {% endif %}
+
+  <div class="text-center mt-4">
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-lg">
+      🔙 Back to Dashboard
+    </a>
+  </div>
 </div>
 {% endblock %}

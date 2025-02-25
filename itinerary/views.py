@@ -20,57 +20,118 @@ def generate_itinerary(request):
         num_travelers = request.POST.get("num_travelers")
         transport_mode = request.POST.get("transport_mode")
 
+        # ✅ Step 1: Validate form inputs
         if not all([current_location, destination, start_date, end_date, num_travelers, transport_mode]):
             return render(request, "itinerary/dashboard.html", {"error": "Please fill in all fields."})
 
-        start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
-        duration = (end_date_obj - start_date_obj).days
+        try:
+            # ✅ Step 2: Convert dates and calculate duration
+            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+            duration = (end_date_obj - start_date_obj).days
 
+            if duration <= 0:
+                return render(request, "itinerary/dashboard.html", {"error": "End date must be after start date."})
+
+            # ✅ Debug: Print extracted inputs
+            print(f"\n🔹 **User Input:** {current_location} → {destination}, {duration} days")
+            print(f"👥 Travelers: {num_travelers}, 🚗 Mode: {transport_mode}\n")
+
+        except ValueError:
+            return render(request, "itinerary/dashboard.html", {"error": "Invalid date format."})
+
+        # ✅ Step 3: Construct query
         query = (
             f"I want to travel from {current_location} to {destination}. The trip starts on {start_date} and ends on {end_date}, lasting {duration} days. "
             f"There are {num_travelers} travelers, and we will be traveling by {transport_mode}."
         )
+
+        # ✅ Step 4: Initialize Gemini API Client
+        api_key = os.environ.get("GEMINI_API_KEY")
+        if not api_key:
+            print("⚠️ Warning: GEMINI_API_KEY is missing! Check environment variables.")
+            return render(request, "itinerary/dashboard.html", {"error": "Internal error: Missing API key."})
 
         try:
             llm = ChatGoogleGenerativeAI(
                 model="gemini-1.5-pro",
                 temperature=0,
                 max_retries=2,
-                api_key=os.environ.get("GEMINI_API_KEY")
+                api_key=api_key
             )
 
-            prompt_template = """
-                You are an intelligent AI assistant that generates structured travel itineraries in valid JSON format.
+            prompt_template = PromptTemplate(
+                input_variables=["query", "current_location", "destination", "start_date", "end_date", "duration", "num_travelers", "transport_mode"],
+                template="""
+                You are an AI travel assistant that generates structured travel itineraries in valid JSON format.
 
-                User query: {query}
+                ### **User Request:**  
+                {query}
 
-                Response format:
+                ### **Instructions:**
+                - Generate a structured, **realistic**, and **detailed** travel itinerary.
+                - Organize the itinerary into **daily plans** including activities, dining, and transport.
+                - Ensure the schedule is **balanced** with sightseeing, meals, travel time, rest breaks, and optional activities.
+                - Mention local food spots, must-visit places, and cultural experiences.
+                - If the journey involves multiple locations, include travel duration and suggested transport options.
+                - Avoid unnecessary repetition and ensure time is utilized effectively.
+                - Ensure output is **valid JSON**.
+
+                ### **Response Format:**
                 {{
-                    "Day 1": ["Activity 1", "Activity 2"],
-                    "Day 2": ["Activity 1", "Activity 2"]
+                    "trip_details": {{
+                        "current_location": "{current_location}",
+                        "destination": "{destination}",
+                        "start_date": "{start_date}",
+                        "end_date": "{end_date}",
+                        "duration": "{duration} days",
+                        "num_travelers": "{num_travelers}",
+                        "transport_mode": "{transport_mode}"
+                    }},
+                    "itinerary": {{
+                        "Day 1": {{
+                            "activities": [
+                                "Explore a key landmark",
+                                "Visit a cultural site",
+                                "Try a local dining experience",
+                                "Evening relaxation or optional activities"
+                            ]
+                        }},
+                        "Day 2": {{
+                            "activities": [
+                                "Outdoor adventure",
+                                "Shopping or market visit",
+                                "Cultural or artistic experience"
+                            ]
+                        }}
+                    }}
                 }}
-
-                Ensure that the output is a valid JSON object and contains no extra text.
-            """
-
-            prompt = PromptTemplate(
-                input_variables=["query"],
-                template=prompt_template
+                """
             )
 
-            chain = prompt | llm | JsonOutputParser()
-            response = chain.invoke({"query": query})
+            chain = prompt_template | llm | JsonOutputParser()
+            response = chain.invoke({
+                "query": query,
+                "current_location": current_location,
+                "destination": destination,
+                "start_date": start_date,
+                "end_date": end_date,
+                "duration": str(duration),  # Ensure it's a string
+                "num_travelers": num_travelers,
+                "transport_mode": transport_mode,
+            })
 
-            print("Raw LLM Response:", response)  # Debugging: See what Gemini returns
-
-            structured_response = response  # No need for json.loads()
+            structured_response = response if response else {"itinerary": {}}
 
         except Exception as e:
-            structured_response = {"Error": [f"Error generating itinerary: {str(e)}"]}
+            print(f"❌ Error generating itinerary: {str(e)}")
+            structured_response = {"error": f"Failed to generate itinerary: {str(e)}"}
 
-        context = {
+
+        # ✅ Step 6: Pass data to template
+        return render(request, "itinerary/itinerary.html", {
             "response": structured_response,
+            "trip_details": structured_response.get("trip_details", {}),  # ✅ Ensure trip details are passed
             "current_location": current_location,
             "destination": destination,
             "start_date": start_date,
@@ -78,7 +139,6 @@ def generate_itinerary(request):
             "duration": duration,
             "num_travelers": num_travelers,
             "transport_mode": transport_mode,
-        }
-        return render(request, "itinerary/itinerary.html", context)
+        })
 
-    return redirect("dashboard")  # Redirect to dashboard if accessed via GET
+    return redirect("dashboard")  # Redirect if accessed via GET

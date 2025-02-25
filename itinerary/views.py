@@ -5,6 +5,13 @@ from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 import os
 from datetime import datetime
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 
 @login_required
 def dashboard(request):
@@ -127,6 +134,7 @@ def generate_itinerary(request):
             print(f"❌ Error generating itinerary: {str(e)}")
             structured_response = {"error": f"Failed to generate itinerary: {str(e)}"}
 
+        request.session["itinerary_data"] = structured_response
 
         # ✅ Step 6: Pass data to template
         return render(request, "itinerary/itinerary.html", {
@@ -142,3 +150,86 @@ def generate_itinerary(request):
         })
 
     return redirect("dashboard")  # Redirect if accessed via GET
+
+@login_required
+def download_itinerary_pdf(request):
+    itinerary_data = request.session.get("itinerary_data")
+
+    if not itinerary_data or not itinerary_data.get("itinerary"):
+        return HttpResponse("No itinerary available. Please generate an itinerary first.", content_type="text/plain")
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="itinerary.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # ✅ Title
+    title_style = ParagraphStyle(
+        'TitleStyle',
+        parent=styles['Title'],
+        fontSize=18,
+        textColor=colors.darkblue,
+        spaceAfter=20,
+        alignment=1  # Center alignment
+    )
+    elements.append(Paragraph("Travel Itinerary", title_style))
+
+    # ✅ Trip Details (structured neatly)
+    trip_details = itinerary_data.get("trip_details", {})
+    trip_info = [
+        ["From:", trip_details.get('current_location', 'N/A')],
+        ["To:", trip_details.get('destination', 'N/A')],
+        ["Dates:", f"{trip_details.get('start_date', 'N/A')} to {trip_details.get('end_date', 'N/A')}"],
+        ["Duration:", trip_details.get('duration', 'N/A')],
+        ["Travelers:", trip_details.get('num_travelers', 'N/A')],
+        ["Transport:", trip_details.get('transport_mode', 'N/A')],
+    ]
+
+    table = Table(trip_info, colWidths=[100, 350])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
+    ]))
+
+    elements.append(table)
+    elements.append(Paragraph("<br/><br/>", styles["Normal"]))  # Space
+
+    # ✅ Itinerary Details (formatted as a structured table)
+    itinerary = itinerary_data.get("itinerary", {})
+    itinerary_list = [["Day", "Activities"]]  # Table Header
+
+    for day, details in itinerary.items():
+        # **Text Wrapping: Makes Activities More Readable**
+        activities = "<br/>".join(f"• {activity}" for activity in details.get("activities", []))
+        itinerary_list.append([Paragraph(f"<b>{day}</b>", styles["BodyText"]), Paragraph(activities, styles["BodyText"])])
+
+    itinerary_table = Table(itinerary_list, colWidths=[120, 380], repeatRows=1)
+    itinerary_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # **Align text to the top**
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),  # **More padding for spacing**
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+    ]))
+
+    elements.append(itinerary_table)
+
+    # ✅ Build PDF
+    doc.build(elements)
+
+    return response

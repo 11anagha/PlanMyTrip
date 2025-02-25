@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Travel Itinerary</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      .details,
+      .itinerary {
+        margin-bottom: 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📍 Travel Itinerary</h1>
+
+    <div class="details">
+      <p><strong>Destination:</strong> {{ trip_details.destination }}</p>
+      <p><strong>From:</strong> {{ trip_details.current_location }}</p>
+      <p>
+        <strong>Dates:</strong> {{ trip_details.start_date }} to {{
+        trip_details.end_date }}
+      </p>
+      <p><strong>Travelers:</strong> {{ trip_details.num_travelers }}</p>
+      <p><strong>Transport Mode:</strong> {{ trip_details.transport_mode }}</p>
+    </div>
+
+    <div class="itinerary">
+      <h2>🗓 Itinerary</h2>
+      <table>
+        <tr>
+          <th>Day</th>
+          <th>Activities</th>
+        </tr>
+        {% for day, details in itinerary.items %}
+        <tr>
+          <td>{{ day }}</td>
+          <td>
+            {% for activity in details.activities %}
+            <p>{{ activity.time }} - {{ activity.activity }}</p>
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </body>
+</html>

@@ -1,9 +1,17 @@
-{% extends "itinerary/base.html" %} {% block content %}{% load static %}
-<form
-  method="post"
-  action="{% url 'generate_itinerary' %}"
-  class="trip-planner-container"
->
+{% extends "itinerary/base.html" %} 
+{% block content %}
+{% load static %}
+<!-- Display Success Message -->
+{% if messages %}
+  <div class="alert-container">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+<form method="post" action="{% url 'generate_itinerary' %}" class="trip-planner-container">
   {% csrf_token %}
 
   <div class="trip-planner-header">
@@ -75,4 +83,33 @@
     </div>
   </div>
 </form>
+<!-- Itinerary Display -->
+<h2 class="itinerary-header">Your Previous Itineraries</h2>
+
+{% if itineraries %}
+<div class="itinerary-grid">
+  {% for itinerary in itineraries %}
+  <div class="itinerary-card">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">{{ itinerary.current_location }} to {{ itinerary.destination }}</h5>
+        <p class="card-text"><strong>Dates:</strong> {{ itinerary.start_date }} to {{ itinerary.end_date }}</p>
+        <p class="card-text"><strong>Duration:</strong> {{ itinerary.duration }} days</p>
+        <p class="card-text"><strong>Transport Mode:</strong> {{ itinerary.transport_mode }}</p>
+        
+        <div class="itinerary-actions">
+          <a href="{% url 'view_itinerary' itinerary.id %}" class="btn btn-primary">View</a>
+          <form action="{% url 'delete_itinerary' itinerary.id %}" method="POST" onsubmit="return confirm('Are you sure you want to delete this itinerary?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<p class="no-itineraries">No previous itineraries found.</p>
+{% endif %}
 {% endblock %}

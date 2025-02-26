@@ -1,7 +1,7 @@
 {% extends 'itinerary/base.html' %} {% block content %}
 <div class="container mt-5">
   <h2 class="text-center fw-bold text-primary">
-    📍 Your Personalized Itinerary
+    📍 Your Personalized trip_details
   </h2>
   <p class="text-center text-muted">
     Explore your planned trip with day-wise details
@@ -30,7 +30,7 @@
               <strong>👥 Travelers:</strong> {{ trip_details.num_travelers }}
             </li>
             <li class="list-group-item">
-              <strong>🚗 Transport Mode:</strong> {{ transport_mode }}
+              <strong>🚗 Transport Mode:</strong> {{ trip_details.transport_mode }}
             </li>
           </ul>
           {% else %}
@@ -76,12 +76,12 @@
   {% else %}
   <div class="text-center mt-4">
     <p class="text-danger fs-5 fw-bold">
-      ⚠️ No itinerary available. Please try again.
+      ⚠️ No trip_details available. Please try again.
     </p>
     <img
       src="https://cdn-icons-png.flaticon.com/512/2748/2748558.png"
       width="150"
-      alt="No itinerary"
+      alt="No trip_details"
     />
   </div>
   {% endif %}
@@ -96,8 +96,7 @@
       href="{% url 'download_itinerary' %}"
       target="_blank"
       class="btn btn-outline-primary btn-lg"
-      >Download Itinerary</a
-    >
+      >Download trip_details</a>
   </div>
 </div>
 {% endblock %}

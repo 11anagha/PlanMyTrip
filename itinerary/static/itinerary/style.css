@@ -138,3 +138,65 @@
         font-size: 1rem;
     }
 }
+.alert-container {
+    margin-bottom: 15px;
+}
+  
+.alert {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+.itinerary-header {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+.itinerary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+.itinerary-card .card {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+  
+.itinerary-card .card:hover {
+    transform: translateY(-5px);
+}
+  
+.card-body {
+    padding: 20px;
+}
+.card-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #007bff;
+}
+  
+.card-text {
+    font-size: 14px;
+    color: #333;
+}
+  
+.itinerary-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+  
+.itinerary-actions .btn {
+    flex: 1;
+    margin: 0 5px;
+}
+.no-itineraries {
+    text-align: center;
+    font-size: 18px;
+    color: #888;
+}

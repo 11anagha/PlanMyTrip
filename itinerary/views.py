@@ -12,10 +12,15 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+import json  # If storing details as JSON
+from .models import Itinerary
+from django.contrib import messages
+from django.shortcuts import get_object_or_404
 
 @login_required
 def dashboard(request):
-    return render(request, 'itinerary/dashboard.html')
+    itineraries = Itinerary.objects.filter(user=request.user).order_by("-created_at")
+    return render(request, "itinerary/dashboard.html", {"itineraries": itineraries})
 
 @login_required
 def generate_itinerary(request):
@@ -40,7 +45,7 @@ def generate_itinerary(request):
             if duration <= 0:
                 return render(request, "itinerary/dashboard.html", {"error": "End date must be after start date."})
 
-            # ✅ Debug: Print extracted inputs
+            # ✅ Debugging: Print extracted inputs
             print(f"\n🔹 **User Input:** {current_location} → {destination}, {duration} days")
             print(f"👥 Travelers: {num_travelers}, 🚗 Mode: {transport_mode}\n")
 
@@ -123,12 +128,28 @@ def generate_itinerary(request):
                 "destination": destination,
                 "start_date": start_date,
                 "end_date": end_date,
-                "duration": str(duration),  # Ensure it's a string
+                "duration": str(duration),
                 "num_travelers": num_travelers,
                 "transport_mode": transport_mode,
             })
 
-            structured_response = response if response else {"itinerary": {}}
+            # ✅ Ensure response has valid structure
+            structured_response = response if response else {"trip_details": {}, "itinerary": {}}
+
+            trip_details = structured_response.get("trip_details", {})
+
+            # ✅ Save itinerary to the database
+            Itinerary.objects.create(
+                user=request.user,
+                current_location=current_location,
+                destination=destination,
+                start_date=start_date,
+                end_date=end_date,
+                duration=duration,
+                num_travelers=num_travelers,
+                transport_mode=transport_mode,
+                itinerary_data=structured_response
+            )
 
         except Exception as e:
             print(f"❌ Error generating itinerary: {str(e)}")
@@ -139,18 +160,12 @@ def generate_itinerary(request):
         # ✅ Step 6: Pass data to template
         return render(request, "itinerary/itinerary.html", {
             "response": structured_response,
-            "trip_details": structured_response.get("trip_details", {}),  # ✅ Ensure trip details are passed
-            "current_location": current_location,
-            "destination": destination,
-            "start_date": start_date,
-            "end_date": end_date,
-            "duration": duration,
-            "num_travelers": num_travelers,
-            "transport_mode": transport_mode,
+            "itinerary": structured_response.get("itinerary", {}),  
+            "trip_details": trip_details,
         })
-
+    
     return redirect("dashboard")  # Redirect if accessed via GET
-
+    
 @login_required
 def download_itinerary_pdf(request):
     itinerary_data = request.session.get("itinerary_data")
@@ -233,3 +248,22 @@ def download_itinerary_pdf(request):
     doc.build(elements)
 
     return response
+
+@login_required
+def view_itinerary(request, itinerary_id):
+    try:
+        itinerary = Itinerary.objects.get(id=itinerary_id, user=request.user)
+    except Itinerary.DoesNotExist:
+        messages.error(request, "Itinerary not found.")
+        return redirect("dashboard")
+    
+    trip_details = itinerary.itinerary_data.get("trip_details", {})
+
+    return render(request, "itinerary/itinerary.html", { "itinerary": itinerary, "response": itinerary.itinerary_data, "trip_details": trip_details,})
+
+@login_required
+def delete_itinerary(request, itinerary_id):
+    itinerary = get_object_or_404(Itinerary, id=itinerary_id, user=request.user)
+    itinerary.delete()
+    messages.success(request, "Itinerary deleted successfully.")
+    return redirect("dashboard")  # Redirect back to the dashboard

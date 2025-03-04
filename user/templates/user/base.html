@@ -15,14 +15,13 @@
   </head>
   <body>
     <header>
-      <nav>
-        <div class="logo">
-          <a href="/">PlanMyTrip</a>
+      <nav class="navbar">
+        <div>
+          <a href="#home">Home</a>
+          <a href="#about">About</a>
+          <a id="register" href="{% url 'register' %}">Register</a>
+          <a id="login" href="{% url 'login' %}">Login</a>
         </div>
-        <ul class="nav-links">
-          <li><a href="/login">Login</a></li>
-          <li><a href="/register">Register</a></li>
-        </ul>
       </nav>
     </header>
     {% block content%}{% endblock %}

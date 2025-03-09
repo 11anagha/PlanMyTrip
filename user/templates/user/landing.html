@@ -1,6 +1,134 @@
-{% extends "user/base.html" %} {%block content %}
-<section>
-  <h2>PlanMyTrip</h2>
-  <p>Plan your trip in minutes!</p>
+{% extends "user/base.html" %} {% block content %}
+{% load static %}
+<!-- Background Video -->
+<video autoplay loop muted class="bgvideo">
+  <source src="/static/assets/images/bg.mp4" type="video/mp4" />
+</video>
+
+<!-- Home Section -->
+<section id="home" class="section home">
+  <div class="home-content">
+    <h1>PlanMyTrip</h1>
+    <h3>"Ready for a new adventure? Let's plan it together"</h3>
+  </div>
 </section>
+
+<!-- About Section -->
+<section id="about" class="section">
+  <div class="about">
+    <div class="about_box">
+      <h1>About Us</h1>
+      <p>
+        Welcome to PlanMyTrip, your ultimate companion for crafting
+        seamless and personalized travel experiences! We understand that
+        planning a trip can be overwhelming, which is why we’ve created an
+        intuitive platform that simplifies the process. Whether you’re
+        dreaming of a relaxing beach getaway, an adventurous trek through
+        the mountains, or a cultural city tour, our smart travel planner
+        generator helps you design the perfect itinerary in just a few
+        clicks. With customizable options, real-time suggestions, and
+        expert tips, we’re here to turn your travel dreams into reality.
+        Let us take the stress out of planning so you can focus on making
+        unforgettable memories. Start your journey with us today!
+      </p>
+    </div>
+    <div class="about_box">
+      <img src="/static/assets/images/about.png" alt="About Image" class="aboutimg" />
+    </div>
+  </div>
+</section>
+<!-- Popular Packages -->
+<section id="packages" class="section package">
+  <div class="package-content">
+    <h1>Popular Packages</h1>
+    <div class="places">
+      <div class="packages">
+        <img src="/static/assets/images/london.jpeg" alt="London">
+        <h1>London</h1>
+      </div>
+      <div class="packages">
+        <img src="/static/assets/images/dubai.jpeg" alt="Dubai">
+        <h1>Dubai</h1>
+      </div>
+      <div class="packages">
+        <img src="/static/assets/images/japan.jpg" alt="Japan">
+        <h1>Japan</h1>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section id="faq" class="section">
+  <div class="faq">
+    <div class="container">
+      <h1>FAQ</h1>
+      <details>
+        <summary>
+          Does the generator support international destinations?
+        </summary>
+        <p>
+          Yes, the Travel Itinerary Generator supports thousands of
+          destinations worldwide. Whether you're planning a trip to Paris,
+          Tokyo, or a remote village, the tool can create a tailored
+          itinerary for you.
+        </p>
+      </details>
+
+      <details>
+        <summary>How accurate are the recommendations?</summary>
+        <p>
+          The recommendations are based on up-to-date data, user reviews,
+          and popular trends. However, we recommend double-checking
+          opening hours, availability, and local guidelines before
+          finalizing your plans.
+        </p>
+      </details>
+
+      <details>
+        <summary>Can I save and share my itinerary?</summary>
+        <p>
+          Yes, you can save your itinerary to your account and access it
+          anytime. You can also share it with friends, family, or travel
+          companions via email or a shareable link.
+        </p>
+      </details>
+
+      <details>
+        <summary>Are there pre-made itineraries available?</summary>
+        <p>
+          Yes, the Travel Itinerary Generator offers pre-made itineraries
+          for popular destinations. These can be customized to suit your
+          preferences.
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-section">
+      <h3>About Us</h3>
+      <p>PlanMyTrip helps you create personalized itineraries for your dream vacations.</p>
+    </div>
+    <div class="footer-section">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-section">
+      <h3>Follow Us</h3>
+      <div class="social-icons"></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2025 PlanMyTrip. All rights reserved.</p>
+  </div>
+</footer>
+<script src="{% static 'js/home.js' %}"></script>
 {% endblock %}

@@ -1,15 +1,21 @@
 {% extends "user/base.html" %} {% load static %}{% load crispy_forms_tags %}
 {%block content %}
 <div class="auth-container">
-  <h2>Login</h2>
+  <span class="borderLine"></span>
   <form method="post" class="auth-form">
-    {% csrf_token %} {{ form|crispy }}
-    <!-- Apply crispy styling -->
+    {% csrf_token %}
+    <h2>Login</h2>
+    <div class="inputbox">
+      {{ form.username }}
+    </div>
+    <div class="inputbox">
+      {{ form.password }}
+    </div>
     <button type="submit" class="auth-button">Login</button>
+    <p class="auth-text">
+      Don't have an account?
+      <a class="auth-link" href="{% url 'register' %}">Register here</a>.
+    </p>
   </form>
-  <p class="auth-text">
-    Don't have an account?
-    <a href="{% url 'register' %}" class="auth-link">Register here</a>.
-  </p>
 </div>
 {% endblock %}

@@ -1,6 +1,7 @@
 {% extends "itinerary/base.html" %} 
 {% block content %}
 {% load static %}
+
 <!-- Display Success Message -->
 {% if messages %}
   <div class="alert-container">
@@ -11,7 +12,9 @@
     {% endfor %}
   </div>
 {% endif %}
-<form method="post" action="{% url 'generate_itinerary' %}" class="trip-planner-container">
+
+<!-- Trip Planner Form -->
+<form method="post" action="{% url 'generate_itinerary' %}" class="trip-planner-container" onsubmit="showLoadingAnimation()">
   {% csrf_token %}
 
   <div class="trip-planner-header">
@@ -22,24 +25,12 @@
   <div class="trip-planner-form">
     <div class="trip-planner-group">
       <label for="current_location">Current Location:</label>
-      <input
-        type="text"
-        id="current_location"
-        name="current_location"
-        placeholder="Enter your current location"
-        required
-      />
+      <input type="text" id="current_location" name="current_location" placeholder="Enter your current location" required />
     </div>
 
     <div class="trip-planner-group">
       <label for="destination">Destination:</label>
-      <input
-        type="text"
-        id="destination"
-        name="destination"
-        placeholder="Enter destination"
-        required
-      />
+      <input type="text" id="destination" name="destination" placeholder="Enter destination" required />
     </div>
 
     <div class="trip-planner-row">
@@ -56,13 +47,7 @@
 
     <div class="trip-planner-group">
       <label for="num_travelers">Number of Travelers:</label>
-      <input
-        type="number"
-        id="num_travelers"
-        name="num_travelers"
-        min="1"
-        required
-      />
+      <input type="number" id="num_travelers" name="num_travelers" min="1" required />
     </div>
 
     <div class="trip-planner-group">
@@ -77,12 +62,13 @@
     </div>
 
     <div class="text-center">
-      <button type="submit" class="trip-planner-submit-btn">
+      <button type="submit" id="generate-btn" class="trip-planner-submit-btn">
         Generate Itinerary
       </button>
     </div>
   </div>
 </form>
+
 <!-- Itinerary Display -->
 <h2 class="itinerary-header">Your Previous Itineraries</h2>
 
@@ -112,4 +98,21 @@
 {% else %}
 <p class="no-itineraries">No previous itineraries found.</p>
 {% endif %}
+
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+  <div class="loading-container">
+    <img src="{% static 'assets/images/car_loading_animation.gif' %}" alt="Generating..." class="loading-gif" />
+    <p>Generating Itinerary. Please wait...</p>
+  </div>
+</div>
+
+<!-- JavaScript to Handle GIF Display -->
+<script>
+  function showLoadingAnimation() {
+    document.getElementById("generate-btn").style.display = "none"; // Hide submit button
+    document.getElementById("loading-overlay").style.display = "flex"; // Show overlay
+  }
+</script>
+
 {% endblock %}

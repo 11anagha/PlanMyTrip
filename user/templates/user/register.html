@@ -2,16 +2,28 @@
 <!-- Load crispy_forms_tags -->
 
 {% block content %}
-<div class="auth-container">
-  <h2>Register</h2>
+<div class="regauth-container" style="width: 600px; height: 800px">
+  <span class="regborderLine"></span>
   <form method="post" class="auth-form">
-    {% csrf_token %} {{ form|crispy}}
-    <!-- Render the form using crispy -->
-    <button class="auth-button" type="submit">Register</button>
+    {% csrf_token %}
+    <h2>Register</h2>
+    <div class="inputbox">
+      {{ form.username }}
+    </div>
+    <div class="inputbox">
+      {{ form.email }}
+    </div>
+    <div class="inputbox">
+      {{ form.password }}
+    </div>
+    <div class="inputbox">
+      {{ form.confirm_password }}
+    </div>
+    <button class="regauth-button" type="submit">Register</button>
+    <p class="auth-text">
+      Already have an account?
+      <a class="regauth-link" href="{% url 'login' %}">Login here</a>.
+    </p>
   </form>
-  <p class="auth-text">
-    Already have an account?
-    <a class="auth-link" href="{% url 'login' %}">Login here</a>.
-  </p>
 </div>
 {% endblock %}

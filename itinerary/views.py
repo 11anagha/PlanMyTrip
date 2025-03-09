@@ -16,6 +16,7 @@ import json  # If storing details as JSON
 from .models import Itinerary
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
 
 @login_required
 def dashboard(request):
@@ -40,10 +41,16 @@ def generate_itinerary(request):
             # ✅ Step 2: Convert dates and calculate duration
             start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
             end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+            today = now().date()
             duration = (end_date_obj - start_date_obj).days
 
-            if duration <= 0:
-                return render(request, "itinerary/dashboard.html", {"error": "End date must be after start date."})
+            if start_date_obj < today:
+                messages.error(request, "Start date cannot be in the past.")
+                return redirect("dashboard")
+            
+            if end_date_obj <= start_date_obj:
+                messages.error(request, "End date must be after the start date.")
+                return redirect("dashboard")
 
             # ✅ Debugging: Print extracted inputs
             print(f"\n🔹 **User Input:** {current_location} → {destination}, {duration} days")

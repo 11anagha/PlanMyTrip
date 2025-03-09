@@ -3,12 +3,14 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 
 class RegisterForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
-    confirm_password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Username"}))
+    email = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Email"}))
+    password = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Password", "type": "password"}))
+    confirm_password = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Confirm Password", "type": "password"}))
     
     class Meta:
         model = User
-        fields = ['username', 'email', 'password']
+        fields = ['username', 'email', 'password', "confirm_password"]
     
     def clean(self):
         cleaned_data = super().clean()
@@ -19,8 +21,8 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError("Passwords do not match.")
 
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(label='Username')
-    password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Username"}))
+    password = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Password", "type": "password"}))
 
 
 

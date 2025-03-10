@@ -7,7 +7,6 @@ class Itinerary(models.Model):
     destination = models.CharField(max_length=255)
     start_date = models.DateField()
     end_date = models.DateField()
-    duration = models.IntegerField()
     num_travelers = models.IntegerField()
     transport_mode = models.CharField(max_length=50)
     itinerary_data = models.JSONField()

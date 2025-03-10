@@ -141,13 +141,15 @@ body{
     }
 }
 .alert-container {
-    margin-bottom: 15px;
+    width: 700px;
+    margin-right: auto;
+    margin-left: auto;
+    margin-bottom: -30px;
 }
   
 .alert {
     padding: 10px;
     border-radius: 5px;
-    margin-bottom: 10px;
 }
 .itinerary-header {
     text-align: center;

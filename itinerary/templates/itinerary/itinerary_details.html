@@ -62,7 +62,7 @@
               <span class="text-success me-2">✔️</span>
               <div>
                 <strong>🕒 {{ activity.time }}</strong><br />
-                {{ activity.activity }}  {{activity.description}}
+                {{ activity.activity }} {{activity.description}}
               </div>
             </li>
             {% endfor %}
@@ -97,7 +97,7 @@
   </div>
   <div class="text-center">
     <a
-      href="{% url 'download_itinerary' trip_instance.id %}"
+      href="{% url 'download_itinerary' itinerary_id %}"
       target="_blank"
       class="btn btn-outline-primary btn-lg"
       >Download Itinerary</a>

@@ -16,166 +16,43 @@ import json  # If storing details as JSON
 from .models import Itinerary
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
-from django.utils.timezone import now
+from .generate_itinerary import generate_itinerary
 
 @login_required
 def dashboard(request):
+    if request.method == "POST":
+        start_date = request.POST["start_date"]
+        end_date = request.POST["end_date"]
+        destination = request.POST["destination"]
+        current_location = request.POST["current_location"]
+        num_travelers = request.POST["num_travelers"]
+        transport_mode = request.POST["transport_mode"]
+        today = datetime.now()
+    
+        if start_date < str(today):
+            messages.warning(request, "Please enter a valid date")
+            return redirect("dashboard")
+        else:
+            current_user = request.user
+            generate_itinerary(current_user=current_user, start_date=start_date, end_date=end_date, destination=destination, current_location=current_location, num_travelers=num_travelers,
+                               transport_mode=transport_mode)
+            return redirect("itinerary")
+        
     itineraries = Itinerary.objects.filter(user=request.user).order_by("-created_at")
+            
     return render(request, "itinerary/dashboard.html", {"itineraries": itineraries})
 
+   
 @login_required
-def generate_itinerary(request):
-    if request.method == "POST":
-        current_location = request.POST.get("current_location")
-        destination = request.POST.get("destination")
-        start_date = request.POST.get("start_date")
-        end_date = request.POST.get("end_date")
-        num_travelers = request.POST.get("num_travelers")
-        transport_mode = request.POST.get("transport_mode")
-
-        # ✅ Step 1: Validate form inputs
-        if not all([current_location, destination, start_date, end_date, num_travelers, transport_mode]):
-            return render(request, "itinerary/dashboard.html", {"error": "Please fill in all fields."})
-
-        try:
-            # ✅ Step 2: Convert dates and calculate duration
-            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
-            today = now().date()
-            duration = (end_date_obj - start_date_obj).days
-
-            if start_date_obj < today:
-                messages.error(request, "Start date cannot be in the past.")
-                return redirect("dashboard")
-            
-            if end_date_obj <= start_date_obj:
-                messages.error(request, "End date must be after the start date.")
-                return redirect("dashboard")
-
-            # ✅ Debugging: Print extracted inputs
-            print(f"\n🔹 **User Input:** {current_location} → {destination}, {duration} days")
-            print(f"👥 Travelers: {num_travelers}, 🚗 Mode: {transport_mode}\n")
-
-        except ValueError:
-            return render(request, "itinerary/dashboard.html", {"error": "Invalid date format."})
-
-        # ✅ Step 3: Construct query
-        query = (
-            f"I want to travel from {current_location} to {destination}. The trip starts on {start_date} and ends on {end_date}, lasting {duration} days. "
-            f"There are {num_travelers} travelers, and we will be traveling by {transport_mode}."
-        )
-
-        # ✅ Step 4: Initialize Gemini API Client
-        api_key = os.environ.get("GEMINI_API_KEY")
-        if not api_key:
-            print("⚠️ Warning: GEMINI_API_KEY is missing! Check environment variables.")
-            return render(request, "itinerary/dashboard.html", {"error": "Internal error: Missing API key."})
-
-        try:
-            llm = ChatGoogleGenerativeAI(
-                model="gemini-1.5-pro",
-                temperature=0,
-                max_retries=2,
-                api_key=api_key
-            )
-
-            prompt_template = PromptTemplate(
-                input_variables=["query", "current_location", "destination", "start_date", "end_date", "duration", "num_travelers", "transport_mode"],
-                template="""
-                You are an AI travel assistant that generates structured travel itineraries in valid JSON format.
-
-                ### **User Request:**  
-                {query}
-
-                ### **Instructions:**
-                - Generate a structured, **realistic**, and **detailed** travel itinerary.
-                - Organize the itinerary into **daily plans** including activities, dining, and transport.
-                - Ensure the schedule is **balanced** with sightseeing, meals, travel time, rest breaks, and optional activities.
-                - Mention local food spots, must-visit places, and cultural experiences.
-                - If the journey involves multiple locations, include travel duration and suggested transport options.
-                - Avoid unnecessary repetition and ensure time is utilized effectively.
-                - Ensure output is **valid JSON**.
-
-                ### **Response Format:**
-                {{
-                    "trip_details": {{
-                        "current_location": "{current_location}",
-                        "destination": "{destination}",
-                        "start_date": "{start_date}",
-                        "end_date": "{end_date}",
-                        "duration": "{duration} days",
-                        "num_travelers": "{num_travelers}",
-                        "transport_mode": "{transport_mode}"
-                    }},
-                    "itinerary": {{
-                        "Day 1": {{
-                            "activities": [
-                                "Explore a key landmark",
-                                "Visit a cultural site",
-                                "Try a local dining experience",
-                                "Evening relaxation or optional activities"
-                            ]
-                        }},
-                        "Day 2": {{
-                            "activities": [
-                                "Outdoor adventure",
-                                "Shopping or market visit",
-                                "Cultural or artistic experience"
-                            ]
-                        }}
-                    }}
-                }}
-                """
-            )
-
-            chain = prompt_template | llm | JsonOutputParser()
-            response = chain.invoke({
-                "query": query,
-                "current_location": current_location,
-                "destination": destination,
-                "start_date": start_date,
-                "end_date": end_date,
-                "duration": str(duration),
-                "num_travelers": num_travelers,
-                "transport_mode": transport_mode,
-            })
-
-            # ✅ Ensure response has valid structure
-            structured_response = response if response else {"trip_details": {}, "itinerary": {}}
-
-            trip_details = structured_response.get("trip_details", {})
-
-            # ✅ Save itinerary to the database
-            Itinerary.objects.create(
-                user=request.user,
-                current_location=current_location,
-                destination=destination,
-                start_date=start_date,
-                end_date=end_date,
-                duration=duration,
-                num_travelers=num_travelers,
-                transport_mode=transport_mode,
-                itinerary_data=structured_response
-            )
-
-        except Exception as e:
-            print(f"❌ Error generating itinerary: {str(e)}")
-            structured_response = {"error": f"Failed to generate itinerary: {str(e)}"}
-
-        request.session["itinerary_data"] = structured_response
-
-        # ✅ Step 6: Pass data to template
-        return render(request, "itinerary/itinerary.html", {
-            "response": structured_response,
-            "itinerary": structured_response.get("itinerary", {}),  
-            "trip_details": trip_details,
-        })
+def download_itinerary_pdf(request, itinerary_id):
+    # Fetch itinerary data from the database
+    itinerary_instance = get_object_or_404(Itinerary, id=itinerary_id, user=request.user)
     
-    return redirect("dashboard")  # Redirect if accessed via GET
-    
-@login_required
-def download_itinerary_pdf(request):
-    itinerary_data = request.session.get("itinerary_data")
+    # Ensure itinerary_data is parsed correctly
+    if isinstance(itinerary_instance.itinerary_data, str):  # If stored as JSON string, parse it
+        itinerary_data = json.loads(itinerary_instance.itinerary_data)
+    else:  # If already a dictionary, use it directly
+        itinerary_data = itinerary_instance.itinerary_data
 
     if not itinerary_data or not itinerary_data.get("itinerary"):
         return HttpResponse("No itinerary available. Please generate an itinerary first.", content_type="text/plain")
@@ -198,7 +75,7 @@ def download_itinerary_pdf(request):
     )
     elements.append(Paragraph("Travel Itinerary", title_style))
 
-    # ✅ Trip Details (structured neatly)
+    # ✅ Trip Details
     trip_details = itinerary_data.get("trip_details", {})
     trip_info = [
         ["From:", trip_details.get('current_location', 'N/A')],
@@ -224,12 +101,11 @@ def download_itinerary_pdf(request):
     elements.append(table)
     elements.append(Paragraph("<br/><br/>", styles["Normal"]))  # Space
 
-    # ✅ Itinerary Details (formatted as a structured table)
+    # ✅ Itinerary Details
     itinerary = itinerary_data.get("itinerary", {})
     itinerary_list = [["Day", "Activities"]]  # Table Header
 
     for day, details in itinerary.items():
-        # **Text Wrapping: Makes Activities More Readable**
         activities = "<br/>".join(f"• {activity}" for activity in details.get("activities", []))
         itinerary_list.append([Paragraph(f"<b>{day}</b>", styles["BodyText"]), Paragraph(activities, styles["BodyText"])])
 
@@ -243,8 +119,8 @@ def download_itinerary_pdf(request):
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
         ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # **Align text to the top**
-        ('LEFTPADDING', (0, 0), (-1, -1), 10),  # **More padding for spacing**
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
         ('RIGHTPADDING', (0, 0), (-1, -1), 10),
         ('TOPPADDING', (0, 0), (-1, -1), 8),
     ]))
@@ -256,17 +132,30 @@ def download_itinerary_pdf(request):
 
     return response
 
+
 @login_required
 def view_itinerary(request, itinerary_id):
     try:
         itinerary = Itinerary.objects.get(id=itinerary_id, user=request.user)
+
+        # ✅ Ensure itinerary_data is parsed correctly
+        if isinstance(itinerary.itinerary_data, str):  # If stored as JSON string, parse it
+            itinerary_data = json.loads(itinerary.itinerary_data)
+        else:  # If already a dictionary, use it directly
+            itinerary_data = itinerary.itinerary_data
+
+        trip_details = itinerary_data.get("trip_details", {})
+        itinerary_days = itinerary_data.get("itinerary", {})
+
     except Itinerary.DoesNotExist:
         messages.error(request, "Itinerary not found.")
         return redirect("dashboard")
-    
-    trip_details = itinerary.itinerary_data.get("trip_details", {})
 
-    return render(request, "itinerary/itinerary.html", { "itinerary": itinerary, "response": itinerary.itinerary_data, "trip_details": trip_details,})
+    return render(request, "itinerary/itinerary_details.html", {
+        "trip_details": trip_details,
+        "itinerary_id": itinerary_id,
+        "itinerary": itinerary_days  # ✅ Pass parsed itinerary data
+    })
 
 @login_required
 def delete_itinerary(request, itinerary_id):
@@ -274,3 +163,27 @@ def delete_itinerary(request, itinerary_id):
     itinerary.delete()
     messages.success(request, "Itinerary deleted successfully.")
     return redirect("dashboard")  # Redirect back to the dashboard
+
+
+@login_required
+def itinerary(request):
+    trip_instance = Itinerary.objects.filter(user=request.user).last()
+    
+    if trip_instance:
+        # ✅ Ensure itinerary_data is parsed correctly
+        if isinstance(trip_instance.itinerary_data, str):  # If stored as JSON string, parse it
+            itinerary_data = json.loads(trip_instance.itinerary_data)
+        else:  # If already a dictionary, use it directly
+            itinerary_data = trip_instance.itinerary_data
+
+        trip_details = itinerary_data.get("trip_details", {})
+        itinerary = itinerary_data.get("itinerary", {})
+    else:
+        trip_details = {}
+        itinerary = {}
+
+    return render(request, "itinerary/itinerary.html", {
+        "trip_details": trip_details,
+        "itinerary": itinerary,
+        "trip_instance": trip_instance
+    })

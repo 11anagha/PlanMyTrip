@@ -1,27 +1,36 @@
+* {
+    font-family: "Playfair Display", serif;
+    font-optical-sizing: auto;
+    font-weight: normal;
+    font-style: normal;
+}
 /*navbar*/
 body{
-    background-color: rgb(22, 25, 68);
+    background-color: black;
 }
 .nav-links{
     display: flex;
     justify-content: end;
     align-items: center;
-    background-color: rgb(22, 25, 68);
-    padding: 30px 20px;
-
+    background-color:transparent;
+    padding: 20px 20px;
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    top: 0;
+    z-index: 1;
 } 
-
 .nav-links a{
     color: rgb(231, 231, 231);
     text-decoration: none;
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: 500;
     padding: 8px 12px;
     border-radius: 5px;
 }
 
 .nav-links a:hover{
-    background-color: rgb(92, 92, 122);
+    background-color: rgb(124, 124, 124);
     color: white;
 }
 .logo{
@@ -29,22 +38,50 @@ body{
     left: 0;
 }
 /*dashboard*/
-.trip-planner-container {
-    max-width: 800px;
-    margin: 50px auto;
-    padding: 20px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+.custom-dropdown {
+    background-color: black;
+    color: white;
+    border: 1px solid white;
+    padding: 5px;
+    border-radius: 5px;
+  }
 
+.custom-dropdown option {
+    background-color: black;
+    color: white;
+}
+.plan {
+    font-family: "Arial", sans-serif;
+    /* background-color: #aaaab3; */
+    color: #000000;
+    height: 100vh;
+    padding: 0;
+    line-height: 1.9;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+.trip-planner-container {
+    width: 800px;
+    margin: 50px auto;
+    margin-top: 80px;
+    padding: 40px;
+    background: transparent;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+input {
+    color-scheme: dark;
+}
 .trip-planner-header {
     text-align: center;
     margin-bottom: 30px;
 }
 .trip-planner-header h1 {
-    font-size: 2.5rem;
-    color: #000;
+    font-size: 4rem;
+    color: #faf5f5;
     margin-bottom: 10px;
 }
 
@@ -54,7 +91,7 @@ body{
 }
 
 .trip-planner-form {
-    background: #f9f9f9;
+    background: transparent;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -67,7 +104,7 @@ body{
     display: block;
     font-size: 1rem;
     font-weight: bold;
-    color: #000;
+    color: #fffcfc;
     margin-bottom: 5px;
 }
 .trip-planner-group input,
@@ -78,6 +115,8 @@ body{
     border: 1px solid #ccc;
     border-radius: 5px;
     box-sizing: border-box;
+    background-color: transparent;
+    color: #faf5f5;
 }
 .trip-planner-group input:focus,
 .trip-planner-group select:focus {
@@ -95,23 +134,59 @@ body{
     flex: 1;
 }
 .trip-planner-submit-btn {
+    display: inline-block;
+    text-align: center;
+    padding: 10px 20px;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
     width: 100%;
-    padding: 12px;
-    font-size: 1.1rem;
-    color: #fff;
     background-image: linear-gradient(red, orange);
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-image 0.3s ease;
+    transition: background-color 0.3s ease;
 }
 
 .trip-planner-submit-btn:hover {
     background-image: linear-gradient(orange, red);
 }
-
-/* Responsive Adjustments */
+.trip-planner-submit-btn a {
+    text-decoration: none;
+}
+/* For tablets (widths up to 1024px) */
+@media (max-width: 1024px) {
+    .itinerary-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 per row on tablets */
+    }
+    .navbar {
+      padding: 15px 20px;
+    }
+  
+    .navbar a {
+      font-size: 1.8rem;
+    }
+  
+    .container {
+      width: 90%;
+      padding: 30px;
+    }
+  
+    header h1 {
+      font-size: 3rem;
+    }
+  
+    .submit-btn,
+    .generator_btn {
+      font-size: 1rem;
+      padding: 10px;
+    }
+}
+/* For mobile devices (widths up to 768px) */
 @media (max-width: 768px) {
+    .itinerary-grid {
+        grid-template-columns: repeat(1, 1fr); /* 1 per row on mobile */
+    }
     .trip-planner-row {
         flex-direction: column;
     }
@@ -129,7 +204,7 @@ body{
         font-size: 1rem;
     }
 }
-
+/* For smaller mobile devices (widths up to 480px) */
 @media (max-width: 480px) {
     .trip-planner-group input,
     .trip-planner-group select {
@@ -151,44 +226,74 @@ body{
     padding: 10px;
     border-radius: 5px;
 }
+
 .itinerary-header {
     text-align: center;
     margin: 20px 0;
     font-size: 24px;
     font-weight: bold;
-  }
-  
+}
 .itinerary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr); /* Ensures 3 items per row */
     gap: 20px;
     padding: 20px;
 }
+  
+.itinerary-card {
+    display: flex;
+    justify-content: center;
+}
+
 .itinerary-card .card {
-    background: #ffffff;
+    background: #000000;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease-in-out;
 }
-  
+.maindiv{
+    margin-left: 58%;
+    margin-right: auto;
+} 
 .itinerary-card .card:hover {
     transform: translateY(-5px);
+} 
+.card {
+    background-color: black !important; /* Set black background */
+    color: white !important; /* Set text color to white */
+    margin: 20px auto;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    width: 25%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    float: left;
+    min-width: 380px;
+    margin-left: 6%;
 }
-  
 .card-body {
-    padding: 20px;
+    background-color: black !important; /* Ensure card body is also black */
+    color: white !important; /* Ensure text is readable */
 }
-.card-title {
-    font-size: 20px;
-    font-weight: bold;
-    color: #007bff;
+.card-header {
+    background-color: #575859 !important; /* Keep header styling */
+    color: white !important;
+    padding: 10px;
+    font-weight: bolder;
+    font-size: 2rem;
 }
-  
-.card-text {
-    font-size: 14px;
-    color: #333;
+.list-group {
+    list-style: none;
+    padding: 0;
+    font-size: 1.1rem;
 }
-  
+.list-group-item{
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    background-color: black !important; /* Ensure list items are black */
+    color: aliceblue !important; /* Ensure text is readable */
+    border-color: #444; /* Slightly lighter border for visibility */
+} 
 .itinerary-actions {
     display: flex;
     justify-content: space-between;
@@ -232,4 +337,12 @@ body{
 .loading-gif {
     width: 300px;
     height: 300px;
+}
+.trip-itinerary-heading{
+    color: #ffffff;
+    font-weight: bolder;
+    font-size: 4rem;
+}
+.trip-itinerary-subtext{
+    color: #6c757d;
 }

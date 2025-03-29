@@ -1,23 +1,23 @@
 {% extends 'itinerary/base.html' %} 
 {% block content %}
 <div class="container mt-5">
-  <h2 class="text-center fw-bold text-primary">
-    📍 Your Personalized Trip Itinerary
+  <h2 class="trip-itinerary-heading text-center">
+     Your Personalized Trip Itinerary
   </h2>
-  <p class="text-center text-muted">
-    Explore your planned trip with day-wise details
+  <p class="trip-itinerary-subtext text-center ">
+      Explore your planned trip with day-wise details
   </p>
 
   <!-- ✅ Always Show Trip Details -->
   <div class="row justify-content-center mb-4">
-    <div class="col-md-6">
-      <div class="card shadow-lg border-0 rounded-4">
-        <div class="card-header bg-info text-white">
+    <div class="maindiv">
+      <div class="card "style="max-height: fit-content">
+        <div class="card-header ">
           <h5 class="fw-bold">🌍 Trip Details</h5>
         </div>
         <div class="card-body">
           {% if trip_details %}
-          <ul class="list-group list-group-flush">
+          <ul class="list-group">
             <li class="list-group-item">
               <strong>🗺 Destination:</strong> {{ trip_details.destination }}
             </li>
@@ -44,11 +44,11 @@
   </div>
 
   {% if itinerary %}
-  <div class="row justify-content-center">
+  <div class="subdiv row justify-content-center">
     {% for day, details in itinerary.items %}
     <div class="col-lg-4 col-md-6 mb-4">
-      <div class="card shadow-lg border-0 rounded-4">
-        <div class="card-header bg-primary text-white">
+      <div class="card">
+        <div class="card-header">
           <h5 class="fw-bold">📅 {{ day }}</h5>
           {% if details.date %}
           <p class="mb-0"><small>📆 {{ details.date }}</small></p>

@@ -14,97 +14,100 @@
   </div>
 {% endif %}
 <!-- Trip Planner Form -->
-<form method="POST" class="trip-planner-container" onsubmit="showLoadingAnimation()">
-  {% csrf_token %}
-
-  <div class="trip-planner-header">
-    <h1>Plan Your Trip</h1>
-    <p>Fill in the details below to generate your itinerary</p>
-  </div>
-
-  <div class="trip-planner-form">
-    <div class="trip-planner-group">
-      <label for="current_location">Current Location:</label>
-      <input type="text" id="current_location" name="current_location" placeholder="Enter your current location" required />
+<div class="plan">
+  <form method="POST" class="trip-planner-container" onsubmit="showLoadingAnimation()">
+    {% csrf_token %}
+  
+    <div class="trip-planner-header">
+      <h1>Plan Your Trip</h1>
+      <p>Fill in the details below to generate your itinerary</p>
     </div>
-
-    <div class="trip-planner-group">
-      <label for="destination">Destination:</label>
-      <input type="text" id="destination" name="destination" placeholder="Enter destination" required />
-    </div>
-
-    <div class="trip-planner-row">
+  
+    <div class="trip-planner-form">
       <div class="trip-planner-group">
-        <label for="start_date">Start Date of Trip:</label>
-        <input type="date" id="start_date" name="start_date" required />
+        <label for="current_location">Current Location:</label>
+        <input type="text" id="current_location" name="current_location" placeholder="Enter your current location" required />
       </div>
-
+  
       <div class="trip-planner-group">
-        <label for="end_date">End Date of Trip:</label>
-        <input type="date" id="end_date" name="end_date" required />
+        <label for="destination">Destination:</label>
+        <input type="text" id="destination" name="destination" placeholder="Enter destination" required />
+      </div>
+  
+      <div class="trip-planner-row">
+        <div class="trip-planner-group">
+          <label for="start_date">Start Date of Trip:</label>
+          <input type="date" id="start_date" name="start_date" required />
+        </div>
+  
+        <div class="trip-planner-group">
+          <label for="end_date">End Date of Trip:</label>
+          <input type="date" id="end_date" name="end_date" required />
+        </div>
+      </div>
+  
+      <div class="trip-planner-group">
+        <label for="num_travelers">Number of Travelers:</label>
+        <input type="number" id="num_travelers" name="num_travelers" min="1" required />
+      </div>
+  
+      <div class="trip-planner-group" style="background-color: black;">
+        <label for="transport_mode" style="color: white;">Mode of Transportation:</label>
+        <select id="transport_mode" name="transport_mode" class="custom-dropdown">
+          <option value="car">Car</option>
+          <option value="bus">Bus</option>
+          <option value="train">Train</option>
+          <option value="flight">Flight</option>
+          <option value="bike">Bike</option>
+        </select>
+      </div>
+  
+      <div class="text-center">
+        <button type="submit" id="generate-btn" class="trip-planner-submit-btn">
+          Plan My Trip
+        </button>
       </div>
     </div>
-
-    <div class="trip-planner-group">
-      <label for="num_travelers">Number of Travelers:</label>
-      <input type="number" id="num_travelers" name="num_travelers" min="1" required />
-    </div>
-
-    <div class="trip-planner-group">
-      <label for="transport_mode">Mode of Transportation:</label>
-      <select id="transport_mode" name="transport_mode">
-        <option value="car">Car</option>
-        <option value="bus">Bus</option>
-        <option value="train">Train</option>
-        <option value="flight">Flight</option>
-        <option value="bike">Bike</option>
-      </select>
-    </div>
-
-    <div class="text-center">
-      <button type="submit" id="generate-btn" class="trip-planner-submit-btn">
-        Generate Itinerary
-      </button>
-    </div>
-  </div>
-</form>
-
-<!-- Itinerary Display -->
-<h2 class="itinerary-header">Your Previous Itineraries</h2>
-
-{% if itineraries %}
-<div class="itinerary-grid">
-  {% for itinerary in itineraries %}
-  <div class="itinerary-card">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">{{ itinerary.current_location }} to {{ itinerary.destination }}</h5>
-        <p class="card-text"><strong>Dates:</strong> {{ itinerary.start_date }} to {{ itinerary.end_date }}</p>
-        <p class="card-text"><strong>Duration:</strong> {{ itinerary.duration }} days</p>
-        <p class="card-text"><strong>Transport Mode:</strong> {{ itinerary.transport_mode }}</p>
-        
-        <div class="itinerary-actions">
-          <a href="{% url 'view_itinerary' itinerary.id %}" class="btn btn-primary">View</a>
-          <form action="{% url 'delete_itinerary' itinerary.id %}" method="POST" onsubmit="return confirm('Are you sure you want to delete this itinerary?');">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Delete</button>
-          </form>
+  </form>
+  
+  <!-- Itinerary Display -->
+  <h2 class="itinerary-header">Your Previous Itineraries</h2>
+  
+  {% if itineraries %}
+  <div class="itinerary-grid">
+    {% for itinerary in itineraries %}
+    <div class="itinerary-card">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">{{ itinerary.current_location }} to {{ itinerary.destination }}</h5>
+          <p class="card-text"><strong>Dates:</strong> {{ itinerary.start_date }} to {{ itinerary.end_date }}</p>
+          <p class="card-text"><strong>Duration:</strong> {{ itinerary.duration }} days</p>
+          <p class="card-text"><strong>Transport Mode:</strong> {{ itinerary.transport_mode }}</p>
+          
+          <div class="itinerary-actions">
+            <a href="{% url 'view_itinerary' itinerary.id %}" class="btn btn-primary">View</a>
+            <form action="{% url 'delete_itinerary' itinerary.id %}" method="POST" onsubmit="return confirm('Are you sure you want to delete this itinerary?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
+    {% endfor %}
   </div>
-  {% endfor %}
-</div>
-{% else %}
-<p class="no-itineraries">No previous itineraries found.</p>
-{% endif %}
-
-<!-- Loading Overlay -->
-<div id="loading-overlay">
-  <div class="loading-container">
-    <img src="{% static 'assets/images/car_loading_animation.gif' %}" alt="Generating..." class="loading-gif" />
-    <p>Generating Itinerary. Please wait...</p>
+  {% else %}
+  <p class="no-itineraries">No previous itineraries found.</p>
+  {% endif %}
+  
+  <!-- Loading Overlay -->
+  <div id="loading-overlay">
+    <div class="loading-container">
+      <img src="{% static 'assets/images/car_loading_animation.gif' %}" alt="Generating..." class="loading-gif" />
+      <p>Generating Itinerary. Please wait...</p>
+    </div>
   </div>
+  
 </div>
 
 <!-- JavaScript to Handle GIF Display -->

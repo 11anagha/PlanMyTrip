@@ -68,9 +68,9 @@ def download_itinerary_pdf(request, itinerary_id):
     title_style = ParagraphStyle(
         'TitleStyle',
         parent=styles['Title'],
-        fontSize=18,
+        fontSize=20,
         textColor=colors.darkblue,
-        spaceAfter=20,
+        spaceAfter=30,
         alignment=1  # Center alignment
     )
     elements.append(Paragraph("Travel Itinerary", title_style))
@@ -81,15 +81,14 @@ def download_itinerary_pdf(request, itinerary_id):
         ["From:", trip_details.get('current_location', 'N/A')],
         ["To:", trip_details.get('destination', 'N/A')],
         ["Dates:", f"{trip_details.get('start_date', 'N/A')} to {trip_details.get('end_date', 'N/A')}"],
-        ["Duration:", trip_details.get('duration', 'N/A')],
         ["Travelers:", trip_details.get('num_travelers', 'N/A')],
         ["Transport:", trip_details.get('transport_mode', 'N/A')],
     ]
 
-    table = Table(trip_info, colWidths=[100, 350])
+    table = Table(trip_info, colWidths=[120, 350])
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.lightblue),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.white),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 12),
@@ -106,7 +105,7 @@ def download_itinerary_pdf(request, itinerary_id):
     itinerary_list = [["Day", "Activities"]]  # Table Header
 
     for day, details in itinerary.items():
-        activities = "<br/>".join(f"• {activity}" for activity in details.get("activities", []))
+        activities = "<br/>".join(f"• {act['time']}: {act['activity']}" for act in details.get("activities", []))
         itinerary_list.append([Paragraph(f"<b>{day}</b>", styles["BodyText"]), Paragraph(activities, styles["BodyText"])])
 
     itinerary_table = Table(itinerary_list, colWidths=[120, 380], repeatRows=1)
@@ -115,8 +114,8 @@ def download_itinerary_pdf(request, itinerary_id):
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 14),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('FONTSIZE', (0, 0), (-1, 0), 12),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
         ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.gray),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),

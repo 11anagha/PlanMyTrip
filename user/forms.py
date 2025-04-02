@@ -20,11 +20,6 @@ class RegisterForm(forms.ModelForm):
         if password != confirm_password:
             raise forms.ValidationError("Passwords do not match.")
 
-class LoginForm(AuthenticationForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Username"}))
-    password = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Password", "type": "password"}))
-
-
 
 
 class ItineraryForm(forms.Form):

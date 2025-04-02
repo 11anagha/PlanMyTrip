@@ -52,7 +52,7 @@ def dashboard(request):
                     destination=destination, current_location=current_location,
                     num_travelers=num_travelers, transport_mode=transport_mode
                 )
-                return redirect("dashboard")
+                return redirect("itinerary")
 
         elif form_type == "chatbot":
             # Handle chatbot query

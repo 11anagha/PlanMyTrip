@@ -170,6 +170,9 @@ body {
     transform: translateY(100%);
     animation: fadeInUp 2s ease-in-out forwards; /* Added animation */
 }
+.faq-container{
+    color: white;
+}
 @keyframes popUpright {
     0% {
       scale: 0;
@@ -269,15 +272,17 @@ body {
 .social-icons {
     display: flex;
     gap: 15px;
+    margin-bottom: 25%;
 }
   
-.social-icons a {
+.social-icons svg {
     color: #ecf0f1;
     font-size: 1.2rem;
     transition: color 0.3s ease;
+    justify-content: start;
 }
   
-.social-icons a:hover {
+.social-icons svg:hover {
     color: #f39c12;
 }
   
@@ -641,4 +646,5 @@ p {
     box-shadow: 0px 10px 20px rgba(100, 211, 244, 0.5);
     z-index: 10;
 }
+
   

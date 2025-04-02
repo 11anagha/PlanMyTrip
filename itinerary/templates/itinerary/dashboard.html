@@ -98,22 +98,16 @@
     <p class="no-itineraries">No previous itineraries found.</p>
   {% endif %}
   
-  <!-- Loading Overlay -->
-  <div id="loading-overlay">
-    <div class="loading-container">
-      <img src="{% static 'assets/images/car_loading_animation.gif' %}" alt="Generating..." class="loading-gif" />
-      <p>Generating Itinerary. Please wait...</p>
-    </div>
-  </div>
+
   
   <!-- Chatbot -->
   <div class="chat-icon" id="chatIcon">
-    <i class="fa-solid fa-message"></i>
+    <i class="fa-solid fa-robot"></i>
   </div>
   
   <div class="chat-interface" id="chatBox">
     <div class="chat-header">
-      <h4>Trippy</h4>
+      <h4 style="font-size: 20px;">Trippy</h4>
       <span class="close-btn" id="closeChat">&times;</span>
     </div>
     <div class="chat-body" id="chatBody">
@@ -247,6 +241,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 });
+
+function showLoadingAnimation() {
+    const button = document.getElementById("generate-btn");
+    button.innerHTML = `Generating itinerary <span class="spinner-border spinner-border ms-2" role="status" aria-hidden="true" style="width: 20px; height: 20px; vertical-align: middle;"></span>`;
+    button.disabled = true;
+}
+
 
 </script>
 

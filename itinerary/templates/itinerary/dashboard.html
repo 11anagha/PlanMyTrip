@@ -1,4 +1,4 @@
-{% extends "itinerary/base.html" %} 
+{% extends "itinerary/base.html" %}
 {% block content %}
 {% load static %}
 
@@ -6,51 +6,52 @@
 {% if messages %}
   <div class="alert-container">
     {% for message in messages %}
-        <div class="alert alert-{{message.tags}} alert-dismissible fade show" role="alert">
-          <strong>{{message}}</strong>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
     {% endfor %}
   </div>
 {% endif %}
+
 <!-- Trip Planner Form -->
 <div class="plan">
   <form method="POST" class="trip-planner-container" onsubmit="showLoadingAnimation()">
     {% csrf_token %}
-  
+    <input type="hidden" name="form_type" value="trip_planner"> 
     <div class="trip-planner-header">
       <h1>Plan Your Trip</h1>
       <p>Fill in the details below to generate your itinerary</p>
     </div>
-  
+    
     <div class="trip-planner-form">
       <div class="trip-planner-group">
         <label for="current_location">Current Location:</label>
         <input type="text" id="current_location" name="current_location" placeholder="Enter your current location" required />
       </div>
-  
+      
       <div class="trip-planner-group">
         <label for="destination">Destination:</label>
         <input type="text" id="destination" name="destination" placeholder="Enter destination" required />
       </div>
-  
+      
       <div class="trip-planner-row">
         <div class="trip-planner-group">
           <label for="start_date">Start Date of Trip:</label>
           <input type="date" id="start_date" name="start_date" required />
         </div>
-  
+        
         <div class="trip-planner-group">
           <label for="end_date">End Date of Trip:</label>
           <input type="date" id="end_date" name="end_date" required />
         </div>
       </div>
-  
+      
       <div class="trip-planner-group">
         <label for="num_travelers">Number of Travelers:</label>
         <input type="number" id="num_travelers" name="num_travelers" min="1" required />
       </div>
-  
+      
       <div class="trip-planner-group" style="background-color: black;">
         <label for="transport_mode" style="color: white;">Mode of Transportation:</label>
         <select id="transport_mode" name="transport_mode" class="custom-dropdown">
@@ -61,43 +62,40 @@
           <option value="bike">Bike</option>
         </select>
       </div>
-  
+      
       <div class="text-center">
-        <button type="submit" id="generate-btn" class="trip-planner-submit-btn">
-          Plan My Trip
-        </button>
+        <button type="submit" id="generate-btn" class="trip-planner-submit-btn">Plan My Trip</button>
       </div>
     </div>
   </form>
   
   <!-- Itinerary Display -->
   <h2 class="itinerary-header">Your Previous Itineraries</h2>
-  
   {% if itineraries %}
-  <div class="itinerary-grid">
-    {% for itinerary in itineraries %}
-    <div class="itinerary-card">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">{{ itinerary.current_location }} to {{ itinerary.destination }}</h5>
-          <p class="card-text"><strong>Dates:</strong> {{ itinerary.start_date }} to {{ itinerary.end_date }}</p>
-          <p class="card-text"><strong>Duration:</strong> {{ itinerary.duration }} days</p>
-          <p class="card-text"><strong>Transport Mode:</strong> {{ itinerary.transport_mode }}</p>
-          
-          <div class="itinerary-actions">
-            <a href="{% url 'view_itinerary' itinerary.id %}" class="btn btn-primary">View</a>
-            <form action="{% url 'delete_itinerary' itinerary.id %}" method="POST" onsubmit="return confirm('Are you sure you want to delete this itinerary?');">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-danger">Delete</button>
-            </form>
+    <div class="itinerary-grid">
+      {% for itinerary in itineraries %}
+        <div class="itinerary-card">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">{{ itinerary.current_location }} to {{ itinerary.destination }}</h5>
+              <p class="card-text"><strong>Dates:</strong> {{ itinerary.start_date }} to {{ itinerary.end_date }}</p>
+              <p class="card-text"><strong>Duration:</strong> {{ itinerary.duration }} days</p>
+              <p class="card-text"><strong>Transport Mode:</strong> {{ itinerary.transport_mode }}</p>
+              
+              <div class="itinerary-actions">
+                <a href="{% url 'view_itinerary' itinerary.id %}" class="btn btn-primary">View</a>
+                <form action="{% url 'delete_itinerary' itinerary.id %}" method="POST" onsubmit="return confirm('Are you sure you want to delete this itinerary?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
   {% else %}
-  <p class="no-itineraries">No previous itineraries found.</p>
+    <p class="no-itineraries">No previous itineraries found.</p>
   {% endif %}
   
   <!-- Loading Overlay -->
@@ -108,14 +106,148 @@
     </div>
   </div>
   
+  <!-- Chatbot -->
+  <div class="chat-icon" id="chatIcon">
+    <i class="fa-solid fa-message"></i>
+  </div>
+  
+  <div class="chat-interface" id="chatBox">
+    <div class="chat-header">
+      <h4>Trippy</h4>
+      <span class="close-btn" id="closeChat">&times;</span>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="greetings">
+        <p id="greetingText"></p>
+      </div>
+      {% for entry in chat_history %}
+        <div class="user-message"><p>{{ entry.0 }}</p></div>
+        <div class="ai-response"><p style="white-space: pre-line;">{{ entry.1 }}</p></div>
+      {% endfor %}
+      <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading" style="display: none; color: white;">
+      <div class="spinner me-2"></div>
+      <p>Thinking...</p>
+    </div>
+
+    </div>
+    <div class="chat-footer">
+      <form method="POST" id="chatForm">
+        {% csrf_token %}
+        <input type="hidden" name="form_type" value="chatbot"> 
+        <input type="text" placeholder="Type a message..." id="userInput" name="query" required>
+        <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
 </div>
 
-<!-- JavaScript to Handle GIF Display -->
 <script>
-  function showLoadingAnimation() {
-    document.getElementById("generate-btn").style.display = "none"; // Hide submit button
-    document.getElementById("loading-overlay").style.display = "flex"; // Show overlay
+document.addEventListener("DOMContentLoaded", function () {
+  const chatIcon = document.getElementById("chatIcon");
+  const chatBox = document.getElementById("chatBox");
+  const closeChat = document.getElementById("closeChat");
+  const greetingElement = document.getElementById("greetingText");
+  const chatForm = document.getElementById("chatForm");
+  const userInput = document.getElementById("userInput");
+  const chatBody = document.getElementById("chatBody");
+  const loadingIndicator = document.getElementById("loadingIndicator");
+
+  // Typewriter Effect for Greeting
+  function typeWriterEffect(element, text, speed = 25) {
+    let index = 0;
+    function type() {
+      if (index < text.length) {
+        element.textContent += text.charAt(index);
+        index++;
+        setTimeout(type, speed);
+      }
+    }
+    setTimeout(type, 100);
   }
+
+  typeWriterEffect(greetingElement, "Hi there! How can I assist you today?");
+
+  if (chatIcon && chatBox) {
+    chatIcon.addEventListener("click", function () {
+      chatBox.style.display = "flex";
+      chatBox.style.opacity = "1";
+      chatBox.style.transform = "scale(1)";
+    });
+  }
+
+  if (closeChat && chatBox) {
+    closeChat.addEventListener("click", function () {
+        chatBox.style.opacity = "0";
+        chatBox.style.transform = "scale(0.9)";
+        chatBox.style.transition = "opacity 0.5s ease, transform 0.5s ease"; // Ensure transition is applied
+
+        setTimeout(() => {
+            chatBox.style.display = "none";
+        }, 500);
+    });
+  }
+
+
+
+  if (chatForm) {
+    chatForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const userMessage = userInput.value.trim();
+      if (!userMessage) return;
+
+      // Append User Message
+      const userMessageDiv = document.createElement("div");
+      userMessageDiv.classList.add("user-message");
+      userMessageDiv.innerHTML = `<p>${userMessage}</p>`;
+      chatBody.appendChild(userMessageDiv);
+
+      // Show Loading Indicator
+      const loadingIndicatorDiv = document.createElement("div");
+      loadingIndicatorDiv.id = "loadingIndicator";
+      loadingIndicatorDiv.classList.add("loading");
+      loadingIndicatorDiv.style.display = "flex";
+      loadingIndicatorDiv.innerHTML = `
+        <div class="spinner me-2"></div>
+        <p style="color: white;">Thinking...</p>  <!-- Changed color to white -->
+      `;
+
+      chatBody.appendChild(loadingIndicatorDiv);
+
+      // Scroll to bottom after user message and loading indicator
+      chatBody.scrollTop = chatBody.scrollHeight;
+
+      // AJAX Request to Django Backend
+      fetch(chatForm.action, {
+        method: "POST",
+        body: new FormData(chatForm),
+      })
+        .then((response) => response.json()) // Expecting JSON response
+        .then((data) => {
+          // Remove Loading Indicator
+          loadingIndicatorDiv.style.display = "none";
+
+          // Append AI Response
+          const aiResponseDiv = document.createElement("div");
+          aiResponseDiv.classList.add("ai-response");
+          aiResponseDiv.innerHTML = `<p>${data.response}</p>`;
+          chatBody.appendChild(aiResponseDiv);
+
+          // Scroll to bottom after AI response
+          chatBody.scrollTop = chatBody.scrollHeight;
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          loadingIndicatorDiv.style.display = "none";
+        });
+
+      userInput.value = ""; // Clear input
+    });
+  }
+
+});
+
 </script>
 
 {% endblock %}

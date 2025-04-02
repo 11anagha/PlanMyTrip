@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 import os
 from datetime import datetime
 from reportlab.pdfgen import canvas
@@ -17,30 +17,68 @@ from .models import Itinerary
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from .generate_itinerary import generate_itinerary
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from langchain_openai import ChatOpenAI 
+from langchain_core.messages import HumanMessage  # Corrected Import
+from django.conf import settings
+import logging
+from django.views.decorators.csrf import csrf_exempt
+from langchain_mistralai import ChatMistralAI
+
 
 @login_required
 def dashboard(request):
     if request.method == "POST":
-        start_date = request.POST["start_date"]
-        end_date = request.POST["end_date"]
-        destination = request.POST["destination"]
-        current_location = request.POST["current_location"]
-        num_travelers = request.POST["num_travelers"]
-        transport_mode = request.POST["transport_mode"]
-        today = datetime.now()
-    
-        if start_date < str(today):
-            messages.warning(request, "Please enter a valid date")
-            return redirect("dashboard")
-        else:
-            current_user = request.user
-            generate_itinerary(current_user=current_user, start_date=start_date, end_date=end_date, destination=destination, current_location=current_location, num_travelers=num_travelers,
-                               transport_mode=transport_mode)
-            return redirect("itinerary")
-        
+        form_type = request.POST.get("form_type")
+
+        if form_type == "trip_planner":
+            # Handle trip planner form
+            start_date = request.POST["start_date"]
+            end_date = request.POST["end_date"]
+            destination = request.POST["destination"]
+            current_location = request.POST["current_location"]
+            num_travelers = request.POST["num_travelers"]
+            transport_mode = request.POST["transport_mode"]
+            today = datetime.now().date()
+
+            if start_date < str(today):
+                messages.warning(request, "Please enter a valid date")
+                return redirect("dashboard")
+            else:
+                current_user = request.user
+                generate_itinerary(
+                    current_user=current_user, start_date=start_date, end_date=end_date,
+                    destination=destination, current_location=current_location,
+                    num_travelers=num_travelers, transport_mode=transport_mode
+                )
+                return redirect("dashboard")
+
+        elif form_type == "chatbot":
+            # Handle chatbot query
+            user_query = request.POST["query"]
+
+            # Initialize LangChain Model
+            llm = ChatMistralAI(model="mistral-tiny", api_key=os.environ.get("MISTRAL_API_KEY"))
+            prompt = f"""You are an intelligent AI assistant designed to assist with trip planning. Based on the query: {user_query}"""
+            prompt_template = PromptTemplate(input_variables=["query"], template=prompt)
+            chain = prompt_template | llm | StrOutputParser()
+            response = chain.invoke({"query": user_query})
+
+            # Store chatbot response in session
+            chat_history = request.session.get("chat_history", [])
+            chat_history.append((user_query, response))
+            request.session["chat_history"] = chat_history
+            request.session.modified = True
+
+            return JsonResponse({"response": response})  # Send JSON response to AJAX
+
+    # Fetch itineraries and chat history
     itineraries = Itinerary.objects.filter(user=request.user).order_by("-created_at")
-            
-    return render(request, "itinerary/dashboard.html", {"itineraries": itineraries})
+    chat_history = request.session.get("chat_history", [])
+
+    return render(request, "itinerary/dashboard.html", {"itineraries": itineraries, "chat_history": chat_history})
+
 
    
 @login_required
@@ -105,8 +143,15 @@ def download_itinerary_pdf(request, itinerary_id):
     itinerary_list = [["Day", "Activities"]]  # Table Header
 
     for day, details in itinerary.items():
-        activities = "<br/>".join(f"• {act['time']}: {act['activity']}" for act in details.get("activities", []))
-        itinerary_list.append([Paragraph(f"<b>{day}</b>", styles["BodyText"]), Paragraph(activities, styles["BodyText"])])
+        activities = "<br/>".join(
+            f"• {act['time']}: {act.get('activity', act.get('description', 'No details available'))}"
+            for act in details.get("activities", [])
+        )
+        itinerary_list.append([
+            Paragraph(f"<b>{day}</b>", styles["BodyText"]),
+            Paragraph(activities, styles["BodyText"])
+        ])
+
 
     itinerary_table = Table(itinerary_list, colWidths=[120, 380], repeatRows=1)
     itinerary_table.setStyle(TableStyle([
